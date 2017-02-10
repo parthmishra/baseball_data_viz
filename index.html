@@ -13,9 +13,14 @@ body {
   stroke: #000;
   shape-rendering: crispEdges;
 }
+p {
+  font: 12px sans-serif;
+  height: 100px;
+  width: 400px;
+}
 </style>
 <body>
-
+<p>What type of player is most likely to have a good batting average? According to the data, it's actually <b>lightweight lefties</b> that tend to have the best averages compared to their more common right handed counterparts. Additionally, switch hitters, who are thought to have a specific strategic value don't seem to perform all that much better than pure righties or lefties across all weight sizes. Perhaps the key to a better batting average is really just to weigh less!</p>
 
 <script src="//d3js.org/d3.v3.min.js"></script>
 <script>
@@ -25,9 +30,9 @@ This code is modified from Mike Bostock's simple scatter plot example
 available here: https://bl.ocks.org/mbostock/3887118
 */
 
-var margin = {top: 40, right: 40, bottom: 30, left: 40},
-    width = 960 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom;
+var margin = {top: 40, right: 40, bottom: 40, left: 40},
+    width = window.innerWidth - margin.left - margin.right,
+    height = window.innerHeight - margin.top - margin.bottom;
 
 var x = d3.scale.linear()
     .range([ 0, width ]);
@@ -87,9 +92,18 @@ d3.csv("baseball_data.csv", function(error, data) {
       .data(data)
     .enter().append("circle")
       .attr("class", "dot")
-      .attr("r", 3)
-      .attr("cx", function(d) { return x(d.weight); })
-      .attr("cy", function(d) { return y(d.avg); })
+      .attr("r", 5)
+      // remove 0 values
+      .attr("cx", function(d) {
+        if (d.avg != 0) {
+          return x(d.weight);
+        }
+      })
+      .attr("cy", function(d) {
+        if (d.avg != 0) {
+          return y(d.avg);
+        }
+      })
       // faceting the data with color of handedness
       .style("fill", function(d) { return color(d.handedness); });
 
@@ -100,6 +114,15 @@ d3.csv("baseball_data.csv", function(error, data) {
         .attr("text-anchor", "middle")
         .style("font-size", "16px")
         .text("Batting Average versus Player Weight for Various Batting Styles");
+
+  // add source
+  svg.append("text")
+      .attr("x", width - 10)
+      .attr("y", height + margin.bottom)
+      .attr("text-anchor", "end")
+      .style("font-size", "10px")
+      .style("opacity", 0.5)
+      .text("Source: https://s3.amazonaws.com/udacity-hosted-downloads/ud507/baseball_data.csv")
 
   // creating an interactive legend
   var legend = svg.selectAll(".legend")
