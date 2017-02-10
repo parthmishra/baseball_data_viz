@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="http://dimplejs.org/dist/dimple.v2.0.0.min.js"></script>
+
+    <style>
+    </style>
+
+    <script type="text/javascript">
+      function draw(data) {
+
+      /*
+        D3.js setup code
+      */
+
+          "use strict";
+          var margin = 75,
+              width = 1400 - margin,
+              height = 600 - margin;
+
+
+          var svg = d3.select("body")
+            .append("svg")
+              .attr("width", width + margin)
+              .attr("height", height + margin)
+            .append('g')
+                .attr('class','chart');
+
+      /*
+        Dimple.js Chart construction code
+      */
+
+      // Pass in an axis object and an interval.
+           var cleanAxis = function (axis, oneInEvery) {
+               // This should have been called after draw, otherwise do nothing
+               if (axis.shapes.length > 0) {
+                   // Leave the first label
+                   var del = false;
+                   // If there is an interval set
+                   if (oneInEvery > 1) {
+                       // Operate on all the axis text
+                       axis.shapes.selectAll("text")
+                       .each(function (d) {
+                           // Remove all but the nth label
+                           if (del % oneInEvery !== 0) {
+                               this.remove();
+                               // Find the corresponding tick line and remove
+                               axis.shapes.selectAll("line").each(function (d2) {
+                                   if (d === d2) {
+                                       this.remove();
+                                   }
+                               });
+                           }
+                           del += 1;
+                       });
+                   }
+               }
+           };
+
+          var myChart = new dimple.chart(svg, data);
+          var x = myChart.addCategoryAxis("x", "weight");
+          var y = myChart.addMeasureAxis("y", "HR");
+          myChart.addSeries(['HR','handedness'], dimple.plot.bubble);
+          myChart.addLegend(width,100,100,100);
+          myChart.draw();
+
+          //cleanAxis(x,6);
+        };
+
+    </script>
+  </head>
+<body>
+  <script type="text/javascript">
+  // load data
+  d3.csv("baseball_data.csv", draw);
+  </script>
+</body>
+</html>
