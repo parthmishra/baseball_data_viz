@@ -1,0 +1,46 @@
+Some exploratory data analysis for baseball data in order to find a good visualization for a final D3/Dimple.js visualization.
+
+
+```{r}
+library(ggplot2)
+
+data <- read.csv('baseball_data.csv')
+
+```
+
+
+```{r}
+
+ggplot( aes( x = weight, y = HR ), data = data ) +
+  geom_point()
+  
+```
+
+```{r}
+
+ggplot( aes( x = handedness ), data = data ) +
+  geom_bar()
+
+```
+
+```{r}
+
+ggplot( aes( x = height, y = HR ), data = data ) +
+  geom_point( aes(color = data$handedness) )
+
+```
+
+```{r}
+
+ggplot( aes( x = height, y = avg ), data = data) +
+  geom_point(aes( color = handedness ), alpha = 0.5)
+
+```
+
+```{r}
+
+ggplot( aes( x = weight, y = avg ), data = data ) +
+  geom_point( aes( color = handedness ), alpha = 0.25 )
+
+```
+

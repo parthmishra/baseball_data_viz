@@ -1,119 +1,158 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <script src="http://d3js.org/d3.v3.min.js"></script>
-    <script src="http://dimplejs.org/dist/dimple.v2.0.0.min.js"></script>
 
-    <style>
-      h2 {
-        text-align: center;
-      }
+<meta charset="utf-8">
+<style>
 
-      .axis line, .axis path {
-        shape-rendering: crispEdges;
-        stroke: black;
-        fill: none;
-      }
-    </style>
+body {
+  font: 12px sans-serif;
+}
 
-    <script type="text/javascript">
-      function draw(data) {
-
-      var margin = {top: 25, right: 15, bottom: 60, left: 80}
-          , width = 1400 - margin.left - margin.right
-          , height = 900 - margin.top - margin.bottom;
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+</style>
+<body>
 
 
-      var x = d3.scale.linear()
-              .domain([130, 250])
-              .range([ 0, width ]);
+<script src="//d3js.org/d3.v3.min.js"></script>
+<script>
 
-      var y = d3.scale.linear()
-              .domain([0, 600])
-             	.range([ height, 0 ]);
+/*
+This code is modified from Mike Bostock's simple scatter plot example
+available here: https://bl.ocks.org/mbostock/3887118
+*/
 
-      // Create SVG element
-      var chart = d3.select("body")
-            .append("svg")
-            .attr("width", width + margin.right + margin.left )
-            .attr("height", height + margin.top + margin.bottom)
-            .attr("class","chart")
+var margin = {top: 40, right: 40, bottom: 30, left: 40},
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
 
-      var main = chart.append("g")
-       	    .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-       	    .attr("width", width)
-       	    .attr("height", height)
-       	    .attr("class", "main")
+var x = d3.scale.linear()
+    .range([ 0, width ]);
 
-      var xAxis = d3.svg.axis()
-      	.scale(x)
-      	.orient("bottom");
+var y = d3.scale.linear()
+    .range([ height, 0 ]);
 
+var color = d3.scale.category10();
 
-      main.append("g")
-	      .attr("transform", "translate(0," + height + ")")
-	      .attr("class", "main axis date")
-	      .call(xAxis);
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
 
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left");
 
-      // x axis label
-      main.append("text")
-        .attr("class", "x label")
-        .attr("transform",
-              "translate(" + (width/2) + " ," +
-                             (height + margin.top + 30) + ")")
-        .attr("text-anchor", "middle")
-        .text("Weight");
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 
-    // draw the y axis
-      var yAxis = d3.svg.axis()
-	      .scale(y)
-	      .orient("left");
+// load data
+d3.csv("baseball_data.csv", function(error, data) {
+  if (error) throw error;
 
-    main.append("g")
-	      .attr("transform", "translate(0,0)")
-	      .attr("class", "main axis date")
-	      .call(yAxis);
+  x.domain(d3.extent(data, function(d) { return d.weight; })).nice();
+  y.domain(d3.extent(data, function(d) { return d.avg; })).nice();
 
-    // y axis label
+  // add x axis
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("x", width)
+      .attr("y", -6)
+      .style("text-anchor", "middle")
+      .text("Weight (lbs)");
 
-    main.append("text")
-        .attr("transform", "rotate(-90)")
-        .attr("y", 0 - margin.left)
-        .attr("x",0 - (height / 2))
-        .attr("dy", "1em")
-        .style("text-anchor", "middle")
-        .text("Home Runs");
+  // add y axis
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Batting Average")
 
-    var g = main.append("svg:g");
+  svg.selectAll(".dot")
+      .data(data)
+    .enter().append("circle")
+      .attr("class", "dot")
+      .attr("r", 3)
+      .attr("cx", function(d) { return x(d.weight); })
+      .attr("cy", function(d) { return y(d.avg); })
+      // faceting the data with color of handedness
+      .style("fill", function(d) { return color(d.handedness); });
 
-    g.selectAll("scatter-dots")
-        .data(data)
-        .enter().append("svg:circle")
-          .attr("cx", function (d,i) { return x(d["weight"]); } )
-          .attr("cy", function (d) { return y(d["HR"]); } )
-          .attr("r", 7);
-
-    // chart title
-
-    main.append("text")
+  // add title
+  svg.append("text")
         .attr("x", (width / 2))
         .attr("y", 0 - (margin.top / 2))
-        .style("text-anchor", "middle")
+        .attr("text-anchor", "middle")
         .style("font-size", "16px")
-        .text("Home Runs vs Weight");
+        .text("Batting Average versus Player Weight for Various Batting Styles");
 
-      };
-    </script>
-  </head>
-<body>
-  <script type="text/javascript">
-  /*
-    Load Data
-    */
-  d3.csv("baseball_data.csv", draw);
-  </script>
-</body>
-</html>
+  // creating an interactive legend
+  var legend = svg.selectAll(".legend")
+      .data(color.domain())
+    .enter().append("g")
+      .attr("class", "legend")
+      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+  legend.append("rect")
+      .attr("x", width - 18)
+      .attr("width", 18)
+      .attr("height", 18)
+      .style("fill", color);
+
+  legend.append("text")
+      .attr("x", width - 24)
+      .attr("y", 9)
+      .attr("dy", ".35em")
+      .style("text-anchor", "end")
+      .text(function(d) {
+        // easier to do this rather than modify original data
+        if (d === 'R') {
+          return "Right Handed Hitter";
+        }
+        if (d === 'L') {
+          return "Left Handed Hitter";
+        }
+        if (d === 'B') {
+          return "Switch Hitter";
+        }
+      });
+  // change opacity of dots depending on selection
+  legend.on("click", function(type) {
+      // dim out other options
+      d3.selectAll(".legend")
+          .style("opacity", 0.5);
+
+      d3.select(this)
+          .style("opacity", 1);
+
+      d3.selectAll(".dot")
+        .transition()
+        .duration(500)
+      .style("opacity", 0.2) // still slightly visible to preserve context
+
+      // filter data based on selected batting style
+      .filter(function(d) {
+          return d["handedness"] == type;
+      })
+      .style("opacity", 1)
+
+    });
+
+});
+
+</script>
